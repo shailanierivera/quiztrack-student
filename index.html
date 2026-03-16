@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="QuizSheet"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#4f6ef7"/>
+<title>QuizSheet — Student</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f4f6fb;--surface:#fff;--surface2:#f0f3fa;
+  --border:#e2e8f4;--border2:#c7d2ea;
+  --accent:#4f6ef7;--accent-bg:#eef1ff;--accent-d:#3a54d4;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-border:#86efac;
+  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+  --locked-bg:#1e2535;--locked-text:#94a3b8;--locked-border:#3a4560;
+  --text:#0f172a;--muted:#64748b;--muted2:#94a3b8;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.65rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-size:15px;font-weight:800;color:var(--text);}
+.logo span{color:var(--accent);}
+.top-status{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.ts-answering{background:var(--accent-bg);color:var(--accent);}
+.ts-locked{background:#1e253530;color:var(--locked-text);}
+.ts-checked{background:var(--green-bg);color:var(--green);}
+.ts-waiting{background:var(--amber-bg);color:var(--amber);}
+
+.main{max-width:760px;margin:0 auto;padding:1rem 1rem 3rem;}
+
+/* CONN */
+.conn-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1rem;max-width:460px;margin-left:auto;margin-right:auto;}
+.conn-card h2{font-size:17px;font-weight:800;margin-bottom:6px;}
+.conn-card p{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+.inp{width:100%;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;font-size:15px;font-family:var(--font);color:var(--text);margin-bottom:10px;-webkit-appearance:none;}
+.inp:focus{outline:none;border-color:var(--accent);}
+
+/* HEADER */
+.hdr{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem;text-align:center;}
+.hdr h1{font-size:19px;font-weight:800;margin-bottom:3px;}
+.hdr p{font-size:12px;color:var(--muted);}
+
+/* NAME */
+.name-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.85rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.name-card label{font-size:13px;color:var(--muted);white-space:nowrap;font-weight:500;}
+.name-card input{flex:1;min-width:180px;padding:9px 12px;background:var(--bg);border:1.5px solid var(--border2);border-radius:9px;font-size:15px;font-family:var(--font);color:var(--text);}
+.name-card input:focus{outline:none;border-color:var(--accent);}
+.name-card input:disabled{background:var(--surface2);color:var(--muted);cursor:not-allowed;}
+
+/* PROGRESS */
+.prog-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.75rem 1.25rem;margin-bottom:1rem;}
+.prog-stats{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;}
+.prog-bar-bg{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;display:flex;}
+.prog-lck{height:100%;background:var(--locked-bg);border-radius:4px 0 0 4px;transition:width .3s;}
+.prog-ans{height:100%;background:var(--accent);transition:width .3s;}
+.prog-legend{display:flex;gap:14px;margin-top:6px;}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+
+/* ITEMS GRID */
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:1rem;}
+
+/* ITEM CARD */
+.item-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;position:relative;transition:border-color .2s,background .2s;}
+.item-card.has-answer{border-color:var(--accent);background:var(--accent-bg);}
+.item-card.is-locked{background:var(--locked-bg);border-color:var(--locked-border);}
+.item-card.correct{background:var(--green-bg);border-color:var(--green-border);}
+.item-card.wrong{background:var(--red-bg);border-color:var(--red-border);}
+
+.item-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.item-num{font-size:11px;font-weight:700;color:var(--muted);font-family:var(--mono);}
+.item-card.is-locked .item-num{color:var(--locked-text);}
+
+/* COUNTDOWN RING */
+.cring{position:relative;width:24px;height:24px;flex-shrink:0;}
+.cring svg{transform:rotate(-90deg);}
+.cring .track{fill:none;stroke:#e2e8f4;stroke-width:3;}
+.cring .fill{fill:none;stroke:var(--accent);stroke-width:3;stroke-dasharray:62.8;stroke-dashoffset:62.8;transition:stroke-dashoffset .15s linear;stroke-linecap:round;}
+.cring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;font-weight:800;color:var(--accent);font-family:var(--mono);line-height:1;}
+.lock-ico{font-size:15px;}
+.result-ico{font-size:14px;font-weight:800;}
+
+/* CHOICES */
+.choices{display:flex;gap:5px;}
+.cbtn{flex:1;padding:8px 4px;font-size:13px;font-weight:700;border:1.5px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--muted);cursor:pointer;text-align:center;transition:all .1s;font-family:var(--font);}
+.cbtn:active:not(:disabled){transform:scale(.93);}
+.cbtn:hover:not(:disabled){background:var(--surface2);color:var(--text);}
+.cbtn.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+.cbtn.lk{background:#2d3650;border-color:#4a5680;color:#94a3b8;}
+.cbtn.c-ok{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+.cbtn.c-bad{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.cbtn:disabled{cursor:not-allowed;}
+
+/* COUNTDOWN BAR */
+.cbar-wrap{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:8px;}
+.cbar{height:100%;background:var(--accent);border-radius:2px;transition:width .15s linear;}
+
+/* WARN */
+.warn-box{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1rem;display:flex;gap:10px;}
+.warn-ico{font-size:18px;flex-shrink:0;}
+.warn-body{font-size:13px;color:var(--amber);font-weight:500;line-height:1.5;}
+.warn-items{font-family:var(--mono);font-size:11px;margin-top:3px;}
+
+/* ACTION */
+.action-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.btn{width:100%;padding:14px;font-size:15px;font-weight:700;border-radius:10px;border:none;cursor:pointer;font-family:var(--font);transition:opacity .15s,transform .1s;margin-bottom:8px;-webkit-tap-highlight-color:transparent;}
+.btn:last-child{margin-bottom:0;}
+.btn:active{transform:scale(.98);}
+.btn-submit{background:var(--accent);color:#fff;}
+.btn-amber{background:var(--amber);color:#fff;}
+.btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--muted);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* PASSWORD */
+.pw-card{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.pw-card p{font-size:13px;color:var(--amber);font-weight:500;margin-bottom:10px;line-height:1.6;}
+.pw-lbl{font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;}
+.pw-row{display:flex;gap:8px;}
+.pw-row input{flex:1;padding:10px 12px;border:1.5px solid var(--amber-border);border-radius:9px;background:#fff;font-size:14px;font-family:var(--font);color:var(--text);}
+.pw-row input:focus{outline:none;border-color:var(--amber);}
+.pw-row .btn{width:auto;padding:10px 20px;margin:0;font-size:14px;}
+.err{font-size:12px;color:var(--red);margin-top:5px;font-weight:500;}
+
+/* SCORE */
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;text-align:center;margin-bottom:1rem;}
+.score-big{font-size:46px;font-weight:800;font-family:var(--mono);}
+.score-grade{display:inline-block;padding:5px 22px;border-radius:20px;font-size:20px;font-weight:800;margin-top:8px;}
+.score-msg{font-size:13px;color:var(--muted);margin-top:8px;}
+.score-stats{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+.ss{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 20px;text-align:center;}
+.ss .v{font-size:22px;font-weight:800;font-family:var(--mono);}
+.ss .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+.legend{font-size:12px;color:var(--muted);margin-bottom:8px;}
+
+/* WAITING */
+.wait-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2.5rem;text-align:center;}
+.wait-ico{font-size:46px;margin-bottom:10px;}
+.wait-card h2{font-size:17px;font-weight:700;margin-bottom:6px;}
+.wait-card p{font-size:13px;color:var(--muted);line-height:1.6;}
+.dots{margin-top:14px;display:flex;justify-content:center;gap:5px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted2);animation:bounce .8s infinite;}
+.dot:nth-child(2){animation-delay:.15s;}
+.dot:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-6px);}}
+
+/* INSTALL BANNER */
+.install-banner{background:var(--accent-bg);border:1.5px solid var(--accent);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--accent);font-weight:600;}
+
+@media(max-width:420px){
+  .items-grid{grid-template-columns:1fr 1fr;}
+  .score-big{font-size:36px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Quiz<span>Sheet</span></div>
+  <div class="top-status ts-waiting" id="topStatus">Connecting…</div>
+</div>
+
+<div class="main" id="main"></div>
+
+<script>
+const N=50;
+const CH=['A','B','C','D'];
+const SECS=3;
+
+let CFG={url:'',key:'',table:'quiz_results'};
+let ST={name:'',answers:{},locked:{},rowId:null,session:null,answerKey:{},password:'teacher123',phase:'conn'};
+let timers={};
+let pollTimer=null;
+
+function L(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
+function W(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function loadAll(){const c=L('qs_cfg');if(c)CFG={...CFG,...c};const s=L('qs_st');if(s)ST={...ST,...s};}
+function saveAll(){W('qs_cfg',CFG);W('qs_st',ST);}
+loadAll();
+
+async function sb(m,p,b){
+  const r=await fetch(CFG.url+'/rest/v1/'+p,{
+    method:m,
+    headers:{'apikey':CFG.key,'Authorization':'Bearer '+CFG.key,'Content-Type':'application/json','Prefer':'return=representation'},
+    body:b?JSON.stringify(b):undefined
+  });
+  if(!r.ok){const t=await r.text();throw new Error(t);}
+  return r.status===204?[]:r.json();
+}
+
+async function fetchSession(){
+  const rows=await sb('GET',CFG.table+'?student_name=eq.__SESSION__&status=eq.open&order=submitted_at.desc&limit=1');
+  return rows[0]||null;
+}
+
+function answeredCount(){return Object.keys(ST.answers).length;}
+function lockedCount(){return Object.keys(ST.locked).filter(k=>ST.locked[k]).length;}
+function unlockedAnswered(){return Object.keys(ST.answers).filter(k=>!ST.locked[k]);}
+function calcScore(){let c=0;for(let i=1;i<=N;i++)if(ST.answers[i]&&ST.answers[i]===ST.answerKey[i])c++;return c;}
+
+function getGrade(pct){
+  if(pct>=97)return{g:'A+',c:'#065f46',b:'#d1fae5'};if(pct>=93)return{g:'A',c:'#065f46',b:'#d1fae5'};
+  if(pct>=90)return{g:'A-',c:'#065f46',b:'#d1fae5'};if(pct>=87)return{g:'B+',c:'#1e40af',b:'#dbeafe'};
+  if(pct>=83)return{g:'B',c:'#1e40af',b:'#dbeafe'};if(pct>=80)return{g:'B-',c:'#1e40af',b:'#dbeafe'};
+  if(pct>=77)return{g:'C+',c:'#92400e',b:'#fef3c7'};if(pct>=73)return{g:'C',c:'#92400e',b:'#fef3c7'};
+  if(pct>=70)return{g:'C-',c:'#92400e',b:'#fef3c7'};if(pct>=60)return{g:'D',c:'#7f1d1d',b:'#fee2e2'};
+  return{g:'F',c:'#7f1d1d',b:'#fee2e2'};
+}
+
+function setStatus(text,cls){
+  const el=document.getElementById('topStatus');
+  if(el){el.textContent=text;el.className='top-status '+cls;}
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render(){
+  const m=document.getElementById('main');
+  m.innerHTML='';
+  if(ST.phase==='conn')renderConn(m);
+  else if(ST.phase==='waiting')renderWaiting(m);
+  else if(ST.phase==='answering')renderAnswering(m);
+  else if(ST.phase==='submitted')renderSubmitted(m);
+  else if(ST.phase==='checked')renderChecked(m);
+}
+
+// ── CONN ──────────────────────────────────────────────────────────────────────
+function renderConn(m){
+  setStatus('Setup','ts-waiting');
+  m.innerHTML=`
+    <div style="max-width:440px;margin:1.5rem auto;">
+      <div class="conn-card">
+        <h2>Connect to QuizSheet</h2>
+        <p>Enter the database details. Your teacher will provide these. You only need to do this once.</p>
+        <label style="font-size:12px;color:var(--muted);font-weight:500;display:block;margin-bottom:5px;">Supabase URL</label>
+        <input class="inp" id="sbU" placeholder="https://xxxx.supabase.co" type="url" value="${CFG.url}"/>
+        <label style="font-size:12px;color:var(--muted);font-weight:500;display:block;margin-bottom:5px;">Publishable Key</label>
+        <input class="inp" id="sbK" placeholder="sb_publishable_..." value="${CFG.key}"/>
+        <button class="btn btn-submit" onclick="doConn()">Connect →</button>
+      </div>
+    </div>`;
+}
+
+async function doConn(){
+  CFG.url=document.getElementById('sbU').value.trim().replace(/\/$/,'');
+  CFG.key=document.getElementById('sbK').value.trim();
+  saveAll();
+  try{
+    const sess=await fetchSession();
+    if(sess){loadSession(sess);ST.phase='answering';}
+    else{ST.phase='waiting';}
+    saveAll();render();startSessionPoll();
+  }catch(e){alert('Could not connect: '+e.message);}
+}
+
+function loadSession(sess){
+  const isNew=!ST.session||ST.session.session_id!==sess.session_id;
+  if(isNew){
+    ST.session=sess;
+    try{ST.answerKey=JSON.parse(sess.answers||'{}');}catch(e){ST.answerKey={};}
+    try{const li=JSON.parse(sess.locked_items||'{}');ST.password=li._password||'teacher123';}catch(e){ST.password='teacher123';}
+    ST.answers={};ST.locked={};ST.rowId=null;
+    Object.values(timers).forEach(t=>{if(t&&t.interval)clearInterval(t.interval);});
+    timers={};
+  }
+}
+
+// ── WAITING ───────────────────────────────────────────────────────────────────
+function renderWaiting(m){
+  setStatus('Waiting…','ts-waiting');
+  m.innerHTML=`
+    <div style="max-width:440px;margin:2rem auto;">
+      <div class="wait-card">
+        <div class="wait-ico">⏳</div>
+        <h2>No active session</h2>
+        <p>Your teacher hasn't opened a session yet.<br/>This page checks automatically.</p>
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      </div>
+    </div>`;
+}
+
+// ── ANSWERING ─────────────────────────────────────────────────────────────────
+function renderAnswering(m){
+  setStatus('Answering','ts-answering');
+  const ans=answeredCount(), lck=lockedCount();
+  const lckPct=Math.round(lck/N*100);
+  const ansPct=Math.max(0,Math.round(ans/N*100)-lckPct);
+
+  // Check if installable
+  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  const installHtml=!isStandalone?`<div class="install-banner">📲 Add to Home Screen for quick access every quiz!</div>`:'';
+
+  m.innerHTML=`
+    ${installHtml}
+    <div class="hdr">
+      <h1>📋 Answer Sheet</h1>
+      <p>Tap an answer — it locks automatically after ${SECS} seconds.</p>
+    </div>
+    <div class="name-card">
+      <label>Full name:</label>
+      <input type="text" id="sName" placeholder="Enter your full name" value="${ST.name}" autocomplete="name" ${lck>0?'disabled':''}/>
+    </div>
+    <div class="prog-card">
+      <div class="prog-stats">
+        <span>${ans} answered</span>
+        <span>🔒 ${lck} / ${N} locked</span>
+      </div>
+      <div class="prog-bar-bg">
+        <div class="prog-lck" id="pLck" style="width:${lckPct}%"></div>
+        <div class="prog-ans" id="pAns" style="width:${ansPct}%"></div>
+      </div>
+      <div class="prog-legend">
+        <div class="leg"><div class="leg-dot" style="background:#1e2535;border:1px solid #3a4560;"></div>Locked</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--accent);"></div>Answered</div>
+        <div class="leg"><div class="leg-dot" style="background:var(--border2);"></div>Unanswered</div>
+      </div>
+    </div>
+    <div class="items-grid" id="iGrid"></div>
+    <div id="warnBox"></div>
+    <div class="action-card">
+      <button class="btn btn-submit" onclick="trySubmit()">✅ Done — Submit Answers</button>
+    </div>`;
+
+  buildAllItems();
+  const sn=document.getElementById('sName');
+  if(sn&&!sn.disabled)sn.addEventListener('input',e=>{ST.name=e.target.value;});
+  updateWarnBox();
+}
+
+function buildAllItems(){
+  const g=document.getElementById('iGrid');
+  if(!g)return;
+  g.innerHTML='';
+  for(let i=1;i<=N;i++)buildItem(i,g);
+}
+
+function buildItem(i, container){
+  const isLocked=ST.locked[i];
+  const sel=ST.answers[i];
+  const hasPending=timers[i]&&timers[i].remaining>0;
+
+  const card=document.createElement('div');
+  card.id='card-'+i;
+  card.className='item-card'+(isLocked?' is-locked':sel?' has-answer':'');
+
+  let statusHtml='';
+  if(isLocked) statusHtml=`<span class="lock-ico">🔒</span>`;
+  else if(hasPending) statusHtml=buildRingHTML(i,timers[i].remaining);
+
+  card.innerHTML=`
+    <div class="item-top">
+      <span class="item-num">#${i}</span>
+      <div id="status-${i}">${statusHtml}</div>
+    </div>
+    <div class="choices" id="ch-${i}"></div>
+    ${hasPending?`<div class="cbar-wrap"><div class="cbar" id="cbar-${i}" style="width:${(timers[i].remaining/SECS)*100}%"></div></div>`:''}`;
+
+  if(container)container.appendChild(card);
+  buildChoices(i);
+}
+
+function buildRingHTML(i,rem){
+  const circ=62.8;
+  const offset=circ-(rem/SECS)*circ;
+  return `<div class="cring" id="ring-${i}">
+    <svg width="24" height="24" viewBox="0 0 24 24">
+      <circle class="track" cx="12" cy="12" r="10"/>
+      <circle class="fill" id="rf-${i}" cx="12" cy="12" r="10" style="stroke-dashoffset:${offset}"/>
+    </svg>
+    <div class="cring-num" id="rn-${i}">${rem}</div>
+  </div>`;
+}
+
+function buildChoices(i){
+  const ch=document.getElementById('ch-'+i);
+  if(!ch)return;
+  ch.innerHTML='';
+  const isLocked=ST.locked[i];
+  const sel=ST.answers[i];
+  CH.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='cbtn';b.textContent=c;b.disabled=isLocked;
+    if(isLocked){if(c===sel)b.classList.add('lk');}
+    else{
+      if(c===sel)b.classList.add('sel');
+      b.addEventListener('click',()=>onChoiceTap(i,c));
+    }
+    ch.appendChild(b);
+  });
+}
+
+function onChoiceTap(id,choice){
+  if(ST.locked[id])return;
+  ST.answers[id]=choice;
+  // Disable name input after first answer
+  const sn=document.getElementById('sName');
+  if(sn&&!sn.disabled){ST.name=sn.value.trim();sn.disabled=true;}
+  saveAll();
+
+  // Update choice buttons immediately
+  const ch=document.getElementById('ch-'+id);
+  if(ch)ch.querySelectorAll('.cbtn').forEach(b=>{b.classList.toggle('sel',b.textContent===choice);});
+
+  // Update card class
+  const card=document.getElementById('card-'+id);
+  if(card&&!card.classList.contains('is-locked'))card.className='item-card has-answer';
+
+  // Reset or start countdown
+  if(timers[id]&&timers[id].interval)clearInterval(timers[id].interval);
+  timers[id]={remaining:SECS,interval:null};
+
+  // Show ring
+  const statusEl=document.getElementById('status-'+id);
+  if(statusEl)statusEl.innerHTML=buildRingHTML(id,SECS);
+
+  // Show/update bar
+  let bar=document.getElementById('cbar-'+id);
+  if(!bar){
+    const bw=document.createElement('div');bw.className='cbar-wrap';
+    bw.innerHTML=`<div class="cbar" id="cbar-${id}" style="width:100%"></div>`;
+    if(card)card.appendChild(bw);
+    bar=document.getElementById('cbar-'+id);
+  } else {bar.style.width='100%';}
+
+  // Start tick
+  timers[id].interval=setInterval(()=>{
+    timers[id].remaining--;
+    const r=timers[id].remaining;
+    // Update ring
+    const rf=document.getElementById('rf-'+id);
+    const rn=document.getElementById('rn-'+id);
+    const circ=62.8;
+    if(rf)rf.style.strokeDashoffset=circ-(r/SECS)*circ;
+    if(rn)rn.textContent=r;
+    if(bar)bar.style.width=Math.max(0,(r/SECS)*100)+'%';
+    if(r<=0){
+      clearInterval(timers[id].interval);
+      timers[id]={remaining:0,interval:null};
+      doLockItem(id);
+    }
+  },1000);
+
+  updateProgress();
+  updateWarnBox();
+}
+
+function doLockItem(id){
+  ST.locked[id]=true;saveAll();
+  const card=document.getElementById('card-'+id);
+  if(card){
+    card.className='item-card is-locked';
+    const statusEl=document.getElementById('status-'+id);
+    if(statusEl)statusEl.innerHTML=`<span class="lock-ico">🔒</span>`;
+    const bw=card.querySelector('.cbar-wrap');if(bw)bw.remove();
+    buildChoices(id);
+  }
+  updateProgress();
+  updateWarnBox();
+  // Auto-save to DB when first item locks
+  autoSaveToDB();
+}
+
+async function autoSaveToDB(){
+  if(!ST.name.trim()||!ST.session)return;
+  try{
+    const payload={
+      session_id:ST.session.session_id,
+      student_name:ST.name,
+      answers:JSON.stringify(ST.answers),
+      locked_items:JSON.stringify(ST.locked),
+      score:-1,total:N,percent:-1,grade:'—',status:'answering'
+    };
+    if(ST.rowId){
+      await sb('PATCH',CFG.table+'?id=eq.'+ST.rowId,payload);
+    } else {
+      const rows=await sb('POST',CFG.table,payload);
+      if(rows.length){ST.rowId=rows[0].id;saveAll();}
+    }
+  }catch(e){}
+}
+
+function updateProgress(){
+  const ans=answeredCount(),lck=lockedCount();
+  const lckPct=Math.round(lck/N*100);
+  const ansPct=Math.max(0,Math.round(ans/N*100)-lckPct);
+  const pl=document.getElementById('pLck');const pa=document.getElementById('pAns');
+  if(pl)pl.style.width=lckPct+'%';if(pa)pa.style.width=ansPct+'%';
+  const ps=document.querySelector('.prog-stats');
+  if(ps)ps.innerHTML=`<span>${ans} answered</span><span>🔒 ${lck} / ${N} locked</span>`;
+}
+
+function updateWarnBox(){
+  const wb=document.getElementById('warnBox');if(!wb)return;
+  const unlocked=unlockedAnswered();
+  const unanswered=[];for(let i=1;i<=N;i++)if(!ST.answers[i])unanswered.push(i);
+  let html='';
+  if(unlocked.length)html+=`<div class="warn-box"><div class="warn-ico">⏳</div><div class="warn-body"><strong>${unlocked.length} item(s) still counting down</strong><div class="warn-items">Items: ${unlocked.slice(0,12).join(', ')}${unlocked.length>12?'…':''}</div></div></div>`;
+  if(unanswered.length)html+=`<div class="warn-box"><div class="warn-ico">⚠️</div><div class="warn-body"><strong>${unanswered.length} item(s) not yet answered</strong><div class="warn-items">Items: ${unanswered.slice(0,12).join(', ')}${unanswered.length>12?'…':''}</div></div></div>`;
+  wb.innerHTML=html;
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────────
+async function trySubmit(){
+  const sn=document.getElementById('sName');
+  if(sn&&!sn.disabled)ST.name=sn.value.trim();
+  if(!ST.name.trim()){alert('Please enter your full name first.');return;}
+
+  const unlocked=unlockedAnswered();
+  const unanswered=[];for(let i=1;i<=N;i++)if(!ST.answers[i])unanswered.push(i);
+  let msg='';
+  if(unlocked.length)msg+=`• ${unlocked.length} item(s) still counting down — will be locked now.\n`;
+  if(unanswered.length)msg+=`• ${unanswered.length} item(s) unanswered — will be blank.\n`;
+  if(msg&&!confirm('⚠️ Warning:\n\n'+msg+'\nProceed anyway?'))return;
+  if(!msg&&!confirm('Submit all answers? This cannot be undone.'))return;
+
+  // Force lock pending items
+  unlocked.forEach(id=>{
+    if(timers[id]&&timers[id].interval)clearInterval(timers[id].interval);
+    timers[id]={remaining:0,interval:null};
+    ST.locked[id]=true;
+  });
+  saveAll();
+
+  // Save to Supabase
+  try{
+    const payload={
+      session_id:ST.session.session_id,
+      student_name:ST.name,
+      answers:JSON.stringify(ST.answers),
+      locked_items:JSON.stringify(ST.locked),
+      score:-1,total:N,percent:-1,grade:'—',status:'locked'
+    };
+    if(ST.rowId){
+      await sb('PATCH',CFG.table+'?id=eq.'+ST.rowId,payload);
+    } else {
+      const rows=await sb('POST',CFG.table,payload);
+      if(rows.length){ST.rowId=rows[0].id;saveAll();}
+    }
+    ST.phase='submitted';saveAll();render();
+  }catch(e){alert('Error saving: '+e.message);}
+}
+
+// ── SUBMITTED ─────────────────────────────────────────────────────────────────
+function renderSubmitted(m){
+  setStatus('Locked','ts-locked');
+  const lck=lockedCount(), unanswered=N-answeredCount();
+  m.innerHTML=`
+    <div class="hdr"><h1>🔒 Answers Submitted</h1><p>${ST.name} &nbsp;·&nbsp; ${lck} locked &nbsp;·&nbsp; ${unanswered} blank</p></div>
+    <div class="pw-card">
+      <p><strong>Your answers are saved and locked.</strong><br/>Wait for your teacher to enter the password to reveal your score.</p>
+      <div class="pw-lbl">Teacher — enter password to check</div>
+      <div class="pw-row">
+        <input type="password" id="pwIn" placeholder="Teacher password" autocomplete="off"/>
+        <button class="btn btn-amber" onclick="checkPw()">Check ▶</button>
+      </div>
+      <div id="pwErr" class="err"></div>
+    </div>
+    <div class="items-grid" id="iGrid"></div>`;
+  buildResultItems('locked');
+  document.getElementById('pwIn').addEventListener('keydown',e=>{if(e.key==='Enter')checkPw();});
+}
+
+async function checkPw(){
+  const v=document.getElementById('pwIn').value;
+  if(v===ST.password){
+    // Calculate and save score
+    const sc=calcScore();
+    const pct=Math.round(sc/N*100);
+    const gr=getGrade(pct);
+    try{
+      if(ST.rowId){
+        await sb('PATCH',CFG.table+'?id=eq.'+ST.rowId,{score:sc,percent:pct,grade:gr.g,status:'checked'});
+      }
+    }catch(e){}
+    ST.phase='checked';saveAll();render();
+  } else {
+    const e=document.getElementById('pwErr');
+    if(e){e.textContent='Incorrect password. Try again.';setTimeout(()=>{if(e)e.textContent='';},3000);}
+  }
+}
+
+// ── CHECKED ───────────────────────────────────────────────────────────────────
+function renderChecked(m){
+  setStatus('Checked ✓','ts-checked');
+  const sc=calcScore(),pct=Math.round(sc/N*100);
+  const wrong=answeredCount()-sc, skip=N-answeredCount();
+  const gr=getGrade(pct);
+  const msg=pct>=95?'Outstanding! 🎉':pct>=85?'Excellent! 👏':pct>=75?'Great job!':pct>=60?'Keep studying!':'Review and try again.';
+  m.innerHTML=`
+    <div class="score-card">
+      <div class="score-big">${sc}<span style="font-size:22px;color:var(--muted2);font-weight:500;"> / ${N}</span></div>
+      <div class="score-grade" style="color:${gr.c};background:${gr.b};">${pct}% &nbsp;·&nbsp; ${gr.g}</div>
+      <div class="score-msg">${msg}</div>
+      <div class="score-stats">
+        <div class="ss"><div class="v" style="color:var(--green);">${sc}</div><div class="l">Correct</div></div>
+        <div class="ss"><div class="v" style="color:var(--red);">${wrong}</div><div class="l">Wrong</div></div>
+        <div class="ss"><div class="v" style="color:var(--muted2);">${skip}</div><div class="l">Skipped</div></div>
+      </div>
+    </div>
+    <p class="legend">🟩 Correct &nbsp;·&nbsp; 🟥 Your wrong answer</p>
+    <div class="items-grid" id="iGrid"></div>
+    <div class="action-card">
+      <button class="btn btn-outline" onclick="resetStudent()">↩ Next Student</button>
+    </div>`;
+  buildResultItems('checked');
+}
+
+function buildResultItems(phase){
+  const g=document.getElementById('iGrid');if(!g)return;g.innerHTML='';
+  for(let i=1;i<=N;i++){
+    const sel=ST.answers[i];
+    let cls='item-card is-locked',icon=`<span class="lock-ico">🔒</span>`;
+    if(phase==='checked'){
+      const key=ST.answerKey[i];
+      if(sel===key){cls='item-card correct';icon=`<span class="result-ico" style="color:var(--green)">✓</span>`;}
+      else{cls='item-card wrong';icon=`<span class="result-ico" style="color:var(--red)">✗</span>`;}
+    }
+    const card=document.createElement('div');card.className=cls;
+    card.innerHTML=`<div class="item-top"><span class="item-num" style="color:var(--muted2)">#${i}</span><div>${icon}</div></div><div class="choices" id="ch-${i}"></div>`;
+    g.appendChild(card);
+    const ch=card.querySelector('#ch-'+i);
+    CH.forEach(c=>{
+      const b=document.createElement('button');b.className='cbtn';b.textContent=c;b.disabled=true;
+      if(phase==='checked'){
+        const key=ST.answerKey[i];
+        if(c===key)b.classList.add('c-ok');
+        else if(c===sel&&sel!==key)b.classList.add('c-bad');
+        else if(c===sel)b.classList.add('lk');
+      } else {if(c===sel)b.classList.add('lk');}
+      ch.appendChild(b);
+    });
+  }
+}
+
+function resetStudent(){
+  if(!confirm('Reset for next student? Current answers will be cleared.'))return;
+  Object.values(timers).forEach(t=>{if(t&&t.interval)clearInterval(t.interval);});
+  timers={};
+  ST={...ST,name:'',answers:{},locked:{},rowId:null,phase:'answering'};
+  saveAll();render();
+}
+
+// ── SESSION POLL ──────────────────────────────────────────────────────────────
+function startSessionPoll(){
+  if(pollTimer)clearInterval(pollTimer);
+  pollTimer=setInterval(async()=>{
+    try{
+      const sess=await fetchSession();
+      if(sess&&(!ST.session||ST.session.session_id!==sess.session_id)){
+        loadSession(sess);ST.phase='answering';saveAll();render();
+      } else if(!sess&&ST.phase==='waiting'){
+        // still waiting, dots already showing
+      } else if(!sess&&(ST.phase==='conn')){
+        ST.phase='waiting';saveAll();render();
+      }
+    }catch(e){}
+  },5000);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(async()=>{
+  if(CFG.url&&CFG.key){
+    try{
+      const sess=await fetchSession();
+      if(sess){
+        loadSession(sess);
+        if(ST.phase==='conn'||ST.phase==='waiting')ST.phase='answering';
+      } else {
+        if(ST.phase==='conn')ST.phase='waiting';
+      }
+      saveAll();startSessionPoll();
+    }catch(e){ST.phase='conn';}
+  }
+  render();
+})();
+</script>
+</body>
+</html>
